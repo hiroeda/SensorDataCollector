@@ -1,0 +1,39 @@
+﻿@model IEnumerable<SensorDataCollector.Models.ApiKey>
+
+@{
+    ViewBag.Title = "APIキー一覧";
+}
+
+<h2>@ViewBag.Title</h2>
+
+<p>
+    @Html.ActionLink("キーの追加", "Create")
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.ApiId)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Name)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.ApiId)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Name)
+        </td>
+        <td>
+            @Html.ActionLink("計測状況", "Details", new { id = item.ApiId }) |
+            @Html.ActionLink("名称編集", "Edit", new { id = item.ApiId }) |
+            @Html.ActionLink("削除", "Delete", new { id = item.ApiId })
+        </td>
+    </tr>
+}
+
+</table>
