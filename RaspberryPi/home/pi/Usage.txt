@@ -1,0 +1,65 @@
+■スクリプトの概要
+株式会社ストロベリー・リナックスのＵＳＢ温度・湿度計モジュール・キット
+(メーカー品番：USBRH)をRaspberry Piに接続し、温度及び湿度をPOSTする
+スクリプトです。
+基本的にRaspberry Piに限らずLinuxであれば動作すると思いますが、
+Raspberry Piを使用した場合の手順を記載します。
+
+■環境構築
+・ Rubyのインストール
+  Rubyが環境にインストールされていない場合はインストールします。
+  スクリプトは/usr/bin/rubyを使用する前提で組まれていますので、環境に従って
+  適宜修正を入れてください。
+
+・ USB温度センサーの情報取得コマンド作成
+  インターネットサイト等を検索して見つかる通り、
+  下記手順でコマンドを作成します。
+
+  (1) USBRHをRaspberry Piに接続
+
+  (2) USBRHの情報取得コマンドのソース取得
+    下記URLから取得するとよいようです(2017年12月5日現在)。
+    http://ftp.nsysu.edu.tw/FreeBSD/ports/local-distfiles/sanpei/usbrh-0.05.tar.gz
+
+    取得例)
+    sudo wget http://ftp.nsysu.edu.tw/FreeBSD/ports/local-distfiles/sanpei/usbrh-0.05.tar.gz
+
+  (3) ソースの修正
+    /usr/local/src/usbrh-0.05/usbrh_main.cの232行目付近で
+    下記の233行と237行を追加します(インデントも適宜修正)。
+    
+     行|ソース
+    232|    if((rc = usb_set_configuration(dh, dev->config->bConfigurationValue))<0){
+    233|        if( rc = usb_detach_kernel_driver_np(dh, dev->config->interface->altsetting->bInterfaceNumber)<0 ){
+    234|            puts("usb_set_configuration error");
+    235|            usb_close(dh);
+    236|            exit(3);
+    237|        }
+    238|    }
+  
+  (4) ソースのmake
+    ソースをmakeしてusbrhコマンドを作成します。
+    $ cd /usr/local/src/usbrh-0.05/
+    $ sudo make
+  
+  (5) 権限付与と場所移動
+    usbrhを使用しやすいように実行権の付与と場所の移動をします。
+    $ sudo chown root:root usbrh
+    $ sudo chmod u+s usbrh
+    $ sudo mv -i usbrh /usr/local/bin/
+
+  (6) 動作確認
+    下記実行例のように温度と湿度が出力されればOKです。
+    
+    実行例)
+    $ usbrh
+    20.81 45.02
+    
+・ スクリプトの配置
+  同フォルダにあるpostTempHumid.rbを/home/pi配下に配置してください。
+
+■温度収集の定期実行
+crontab等を使用してpostTempHumid.rbを定期実行してください。
+
+設定例）
+*/5 * * * * /usr/bin/ruby /home/pi/postTempHumid.rb
